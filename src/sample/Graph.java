@@ -494,7 +494,7 @@ class Graph extends JFrame {
         int xp = 0;
         int xp1 = 0;
 
-        for (double x = Step; x <= N; x += Step) {
+/*        for (double x = Step; x <= N; x += Step) {
             double y = K / (A * x);
 
 
@@ -524,6 +524,57 @@ class Graph extends JFrame {
             Oyp = yp;
             Oxp1 = xp1;
             Oyp1 = yp1;                                //Запис значень в тимчасові змінні
+        }*/
+
+
+
+
+
+
+
+
+
+
+        for (double x = Step; x <= N; x += Step) {
+            double y = K / (A * x);
+
+
+            xp = (int) Math.round(CalibratorX - x * CP);
+            xp1 = (int) Math.round(CalibratorX + x * CP);
+
+
+            int yp = (int) Math.round(CalibratorY + y * CP);
+
+            int yp1 = (int) Math.round(CalibratorY - y * CP);
+            System.out.println(y);
+            if (x != Step) {
+                //Малючання по координатам
+                if (CalibratorX - x * CP < width) {
+                    g.drawLine(Oxp - 1, Oyp - 1, xp - 1, yp - 1);              // -1 для того щоб лінія було жирною
+                    g.drawLine(Oxp, Oyp, xp, yp);             //повторне малювання лінії
+                    System.out.println("0xp = " +  Oxp + "0yp = " + Oyp + "xp " + xp);
+                }
+
+                if (CalibratorX + x * CP < width) {  //Fixed
+                    g.drawLine(Oxp1 - 1, Oyp1 - 1, xp1 - 1, yp1 - 1);
+                    g.drawLine(Oxp1, Oyp1, xp1, yp1);
+                }
+            }
+
+            Oxp = xp;
+            Oyp = yp;
+            Oxp1 = xp1;
+            Oyp1 = yp1;                                //Запис значень в тимчасові змінні
         }
+
+
+
+
+
+
+
+
+
+
     }
 }
