@@ -7,8 +7,8 @@ import java.util.Objects;
 class Graph extends JFrame {
     private static int DrawGraph = 0;
 
-    private static int width = 600;                         //Ширина вікна графіку в пікселях
-    private static int height = 600;                        //Висота вікна графіку в пікселях
+    private static final int width = 600;                         //Ширина вікна графіку в пікселях
+    private static final int height = 600;                        //Висота вікна графіку в пікселях
 
     private static int CP = 30;                             //Крок масштабування (ціна поділки)
 
@@ -34,7 +34,7 @@ class Graph extends JFrame {
         setTitle("Графіки Функцій");
         this.setSize(800, 600);    //Розміри вікна
         setResizable(false);                    //Не можна розтягувати
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);   //Закривати програму при закритті вікна
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);   //Закривати програму при закритті вікна
 
 
         //Варіанти в випадаючому списку
@@ -274,11 +274,16 @@ class Graph extends JFrame {
 
         bCalibratorXp.addActionListener(e -> {
             CalibratorX += CP;
+            M--;
+            N--;
             repaint();
         });
 
         bCalibratorXm.addActionListener(e -> {
             CalibratorX -= CP;
+            M++;
+            N++;
+
             repaint();
         });
 
@@ -322,6 +327,9 @@ class Graph extends JFrame {
             CalibratorX = 300;
             CalibratorY = 300;
             CP = 30;
+            M = - 10;
+            N = 10;
+
             repaint();
         });
 
@@ -365,14 +373,12 @@ class Graph extends JFrame {
 
 
         for (int x = CalibratorX; x <= height; x = x + CP) {
-            if (x <= width) {
-                g.setColor(Color.gray);
-                g.drawLine(x, 0, x, height);
-                if (S) {
-                    g.setColor(Color.black);
-                    g.drawLine(x - 1, CalibratorY - 5, x - 1, CalibratorY + 5);
-                    g.drawLine(x, CalibratorY - 5, x, CalibratorY + 5);
-                }
+            g.setColor(Color.gray);
+            g.drawLine(x, 0, x, height);
+            if (S) {
+                g.setColor(Color.black);
+                g.drawLine(x - 1, CalibratorY - 5, x - 1, CalibratorY + 5);
+                g.drawLine(x, CalibratorY - 5, x, CalibratorY + 5);
             }
         }
 
@@ -436,7 +442,7 @@ class Graph extends JFrame {
             y = A * x + B;
             int xp = (int) Math.round((CalibratorX + x * CP));
 
-            //} //Перевірка чи координати по Х не перевищують 600
+            //} //Перевірка чи координати по Х не перевищують 600    для того щоб не малювати на панелі з кнопками
             int yp = (int) Math.round(CalibratorY - y * CP);
 
             if (CalibratorX + x * CP <= 600) {
@@ -485,23 +491,35 @@ class Graph extends JFrame {
         int Oxp = 0, Oyp = 0, Oxp1 = 0, Oyp1 = 0; // Тимчасові змінні збереження попередньої точнки для малювання лінії
 
         g.setColor(Color.red);              //Graphic колір лінії
+        int xp = 0;
+        int xp1 = 0;
 
         for (double x = Step; x <= N; x += Step) {
             double y = K / (A * x);
 
-            int xp = (int) Math.round(CalibratorX - x * CP);
+
+                xp = (int) Math.round(CalibratorX - x * CP);
+                xp1 = (int) Math.round(CalibratorX + x * CP);
+
+
             int yp = (int) Math.round(CalibratorY + y * CP);
-            int xp1 = (int) Math.round(CalibratorX + x * CP);
+
             int yp1 = (int) Math.round(CalibratorY - y * CP);
             System.out.println(y);
             if (x != Step) {
                 //Малючання по координатам
-                g.drawLine(Oxp - 1, Oyp - 1, xp - 1, yp - 1);              // -1 для того щоб лінія було жирною
-                g.drawLine(Oxp1 - 1, Oyp1 - 1, xp1 - 1, yp1 - 1);
+                if (CalibratorX - x * CP < width) {
+                    g.drawLine(Oxp - 1, Oyp - 1, xp - 1, yp - 1);              // -1 для того щоб лінія було жирною
+                    g.drawLine(Oxp, Oyp, xp, yp);             //повторне малювання лінії
+                    System.out.println("0xp = " +  Oxp + "0yp = " + Oyp + "xp " + xp);
+                }
 
-                g.drawLine(Oxp, Oyp, xp, yp);             //повторне малювання лінії
-                g.drawLine(Oxp1, Oyp1, xp1, yp1);
+                if (CalibratorX + x * CP < width) {  //Fixed
+                    g.drawLine(Oxp1 - 1, Oyp1 - 1, xp1 - 1, yp1 - 1);
+                    g.drawLine(Oxp1, Oyp1, xp1, yp1);
+                }
             }
+
             Oxp = xp;
             Oyp = yp;
             Oxp1 = xp1;
