@@ -2,7 +2,11 @@ package sample;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Objects;
+import java.util.Scanner;
 
 class Graph extends JFrame {
     private static int DrawGraph = 0;
@@ -15,7 +19,7 @@ class Graph extends JFrame {
     private static int CalibratorX = 300;                  //Центр вісі Х
     private static int CalibratorY = 300;                  //Центр вісі Y
 
-    private static double Step = 0.01;                    //Крок малювання ліній/точок
+    private static double Step = 0.01;                    //Крок малювання  ліній/точок
 
     public static void main(String[] args) {
         new sample.Graph();
@@ -30,6 +34,12 @@ class Graph extends JFrame {
     static double N = 10;           // кінець проміжку
     static boolean S = true;      //Шкала
 
+    private final String file = "./src/data/History.txt";
+    private FileWriter fw;
+
+    /**
+     * Конструктор класа Graph, при запуску в ньому ініціалізуються всі uhfas
+     */
     Graph() {
         setTitle("Графіки Функцій");
         this.setSize(800, 600);    //Розміри вікна
@@ -65,6 +75,21 @@ class Graph extends JFrame {
         bCPminus.setLocation(615, 500);
         bCPminus.setText("Cp -");
         panel.add(bCPminus);
+
+
+
+        JButton bHistory = new JButton();                  //Створення кнопки історія
+        bHistory.setSize(75, 20);
+        bHistory.setLocation(615, 535);
+        bHistory.setText("History");
+        panel.add(bHistory);
+
+        JButton bClearHistory = new JButton();                  //Створення кнопки стерти історію
+        bClearHistory.setSize(75, 20);
+        bClearHistory.setLocation(695, 535);
+        bClearHistory.setText("Clear");
+        panel.add(bClearHistory);
+
 
 
         JButton bCalibratorXp = new JButton();               //Створення кнопки  +Калібратор центру Х абсцис
@@ -189,6 +214,7 @@ class Graph extends JFrame {
         box1.addActionListener(e -> {
             DrawGraph = Integer.parseInt(Objects.requireNonNull(box1.getSelectedItem()).toString().substring(0, 1)); // Отримання вибраного елемента із приска, визначається по першому символу
 
+
             switch (DrawGraph) {                      // обробка результатів
                 case 1:
                     v1.setVisible(true);        // On/Off видимість для текстових полей
@@ -248,41 +274,98 @@ class Graph extends JFrame {
             }
         });
 
+
+        //Кнопка go
         bDraw.addActionListener(e -> {
+
+
+            try {
+                fw = new FileWriter(file,true);
+                fw.write("\n" + "---"+ java.time.LocalDate.now() + " | " + java.time.LocalTime.now()  + "---" + "\n");
+
+
             switch (DrawGraph) {
                 case 1:
                     Graph.A = Double.parseDouble(v1.getText());  //Отримання значень з тектових полей
                     Graph.B = Double.parseDouble(v2.getText());
+
+                    fw.write("Функція: Лінія"+ "\n");       //Запис історії в файл
+                    fw.write("A = " + Graph.A + "\n");
+                    fw.write("B = " + Graph.B + "\n");
+                    break;
                 case 2:
                     Graph.A = Double.parseDouble(v1.getText());  //Отримання значень з тектових полей
                     Graph.B = Double.parseDouble(v2.getText());
                     Graph.C = Double.parseDouble(v3.getText());
+
+                    fw.write("Функція: Парабола"+ "\n");    //Запис історії в файл
+                    fw.write("A = " + Graph.A + "\n");
+                    fw.write("B = " + Graph.B + "\n");
+                    fw.write("C = " + Graph.C + "\n");
                     break;
                 case 3:
                     Graph.A = Double.parseDouble(v1.getText());
                     Graph.K = Double.parseDouble(v2.getText());
+
+                    fw.write("Функція: Гіпербола"+ "\n");   //Запис історії в файл
+                    fw.write("A = " + Graph.A + "\n");
+                    fw.write("K = " + Graph.K + "\n");
+
+                    break;
+                case 4:
+                    fw.write("Функція: Косинус"+ "\n");
+                    break;
+                case 5:
+                    fw.write("Функція: Синус"+ "\n");
+                    break;
+                case 6:
+                    fw.write("Функція: Тангенс"+ "\n");
+                case 7:
+                    fw.write("Функція: Котангенс"+ "\n");
+                    break;
             }
 
             Graph.M = Double.parseDouble(v4.getText());   // Отримання значень початку проміжку
             Graph.N = Double.parseDouble(v5.getText());     // Отримання значень кінця проміжку
             Graph.S = c1.isSelected();                     // Отримання значень чек боксу "Шкала"
+
+                fw.write("Початок проміжку M = " + Graph.M + "\n");
+                fw.write("Кінець проміжку N = " + Graph.N + "\n");
+
+
             if (Double.parseDouble(v6.getText()) > 0) {
                 Graph.Step = Double.parseDouble(v6.getText());
             }
+
+
+
+
+
+
+
+
+                fw.close();
+
+
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+
+
             repaint(); //Виклик методу який все перемальовує
         });
 
         bCalibratorXp.addActionListener(e -> {
             CalibratorX += CP;
-            M--;
-            N--;
+/*            M--;
+            N--;*/
             repaint();
         });
 
         bCalibratorXm.addActionListener(e -> {
             CalibratorX -= CP;
-            M++;
-            N++;
+/*            M++;
+            N++;*/
 
             repaint();
         });
@@ -334,12 +417,39 @@ class Graph extends JFrame {
         });
 
 
+
+
+        bClearHistory.addActionListener(e -> {
+            try {
+                clearHistory();
+            } catch (IOException ioException) {
+                ioException.printStackTrace();
+            }
+        });
+
+        bHistory.addActionListener(e -> {
+            try {
+                getHistory();
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+        });
+
+
+
+
+
         add(panel);       //Добавлення панелі з кнопками на головне вікно
         setVisible(true); //Зробити головне вікно видимим
         repaint();  //Виклик методу який все перемальовує
     }
 
-    public void paint(Graphics g)       //Функція яка відповідає за малювання (Контекст g)
+
+    /**
+     * Функція яка відповідає за малювання (Контекст g)
+     * @param g об'єкт 2D графіки
+     */
+    public void paint(Graphics g)       //
     {
         super.paint(g);                 //Виклик з батьківського класу JFrame метод Paint
         grid(g);                       //Виклик функції малювання сітки
@@ -416,23 +526,9 @@ class Graph extends JFrame {
     }
 
 
-    private static void Parabola(Graphics g) {
-        g.setColor(Color.red);          //Graphic колір лінії
 
-        for (double x = M; x <= N; x += Step) {
-            double y; //Ініціалізация змінної Y
-            y = A * x * x + B * x + C;
-            //double y = Math.cos(x);
-            int xp = 1;
-            if (CalibratorX + x * CP <= width) {
-                xp = (int) Math.round((CalibratorX + x * CP));
-            } //Перевірка чи координати по Х не перевищують 600
-            int yp = (int) Math.round(CalibratorY - y * CP);
 
-            g.fillOval(xp - 2, yp - 2, 2, 2);     //Малючання по координатам
 
-        }
-    }
 
     private static void Line(Graphics g) {
         g.setColor(Color.red);          //Graphic колір лінії
@@ -450,25 +546,35 @@ class Graph extends JFrame {
             }
             //g.drawLine(Oxp, Oyp,xp,yp);
 
-
         }
     }
 
 
+    /**
+     * Малює функції:
+     * Косинус
+     * Синус
+     * Тангенс
+     * Котангенс
+     * @param g об'єкт 2D графіки
+     */
+
     private void Func(Graphics g) {
         g.setColor(Color.red);          //Graphic колір лінії
+        int Oxp = 0, Oyp = 0;
+        int xp = 1;
+        int yp = 1;
+
 
         for (double x = M; x <= N; x += Step) {
             double y = 1; //Ініціалізация змінної Y
-            int xp = 1;
-            int yp;
 
             switch (DrawGraph) {
                 case 4:
                     y = Math.cos(x);   //Косинус
                     break;
                 case 5:
-                    y = Math.sin(x);  //Сінус
+                    y = Math.sin(x);  //Синус
                     break;
                 case 6:
                     y = Math.tan(x);  //Тангенс
@@ -477,16 +583,77 @@ class Graph extends JFrame {
                     y = 1 / Math.tan(x);  //Котангенс
                     break;
             }
+
+
             if (CalibratorX + x * CP < width) {
                 xp = (int) Math.round(CalibratorX + x * CP);
             }  //Перевірка чи координати по Х не перевищують 600
-            yp = (int) Math.round(CalibratorY - y * CP);
 
-            g.fillOval(xp - 2, yp - 2, 2, 2); //Малючання по координатам
+
+            //if (CalibratorY - y * CP > 0) {
+            if (y < M) y = M;
+
+            if(y > N) y = N;
+
+            yp = (int) Math.round(CalibratorY - y * CP);
+           // }
+
+
+            if (x != M) {
+              //  if(DrawGraph == 6 || DrawGraph == 7){
+                  //  g.drawOval(xp,yp,1,1);
+               // }else {
+                    if ( y > M && y < N)
+                    g.drawLine(Oxp, Oyp, xp, yp);
+                //}
+            }
+
+            Oxp = xp;
+            Oyp = yp;
+        }
+    }
+
+    /**
+     * Малює параболу по точкам
+     * Малювання відбувається лініями від точки до точки
+     * @param g об'єкт 2D графіки
+     */
+    private static void Parabola(Graphics g) {
+
+        g.setColor(Color.red);          //Graphic колір лінії
+        int Oxp = 0, Oyp = 0, yp = 0;
+
+        for (double x = M; x <= N; x += Step) {
+            double y; //Ініціалізация змінної Y
+            y = A * x * x + B * x + C;
+            //double y = Math.cos(x);
+            int xp = 1;
+
+
+            if (x != M) {
+                if (CalibratorX + x * CP <= width) {
+                    xp = (int) Math.round((CalibratorX + x * CP));
+                } //Перевірка чи координати по Х не перевищують 600 пікселів
+                yp = (int) Math.round(CalibratorY - y * CP);
+
+
+                //g.fillOval(xp - 2, yp - 2, 2, 2);     //Малючання по координатам
+                if (CalibratorX + x * CP <= width) {
+                g.drawLine(Oxp, Oyp, xp, yp);
+                }
+
+            }
+            Oxp = xp;
+            Oyp = yp;                                //Запис значень в тимчасові змінні
         }
     }
 
 
+    /**
+     * Малює гіперболу по точкам
+     * Малювання відбувається лініями від точки до точки
+     * @param g об'єкт 2D графіки
+     */
     private static void Hyperbola(Graphics g) {
         int Oxp = 0, Oyp = 0, Oxp1 = 0, Oyp1 = 0; // Тимчасові змінні збереження попередньої точнки для малювання лінії
 
@@ -494,87 +661,72 @@ class Graph extends JFrame {
         int xp = 0;
         int xp1 = 0;
 
-/*        for (double x = Step; x <= N; x += Step) {
+
+        for (double x = Step; x <= N; x += Step) {  //Частина у плюсових координатах
+
             double y = K / (A * x);
-
-
-                xp = (int) Math.round(CalibratorX - x * CP);
-                xp1 = (int) Math.round(CalibratorX + x * CP);
-
-
-            int yp = (int) Math.round(CalibratorY + y * CP);
-
             int yp1 = (int) Math.round(CalibratorY - y * CP);
-            System.out.println(y);
-            if (x != Step) {
-                //Малючання по координатам
-                if (CalibratorX - x * CP < width) {
-                    g.drawLine(Oxp - 1, Oyp - 1, xp - 1, yp - 1);              // -1 для того щоб лінія було жирною
-                    g.drawLine(Oxp, Oyp, xp, yp);             //повторне малювання лінії
-                    System.out.println("0xp = " +  Oxp + "0yp = " + Oyp + "xp " + xp);
-                }
-
-                if (CalibratorX + x * CP < width) {  //Fixed
-                    g.drawLine(Oxp1 - 1, Oyp1 - 1, xp1 - 1, yp1 - 1);
-                    g.drawLine(Oxp1, Oyp1, xp1, yp1);
-                }
-            }
-
-            Oxp = xp;
-            Oyp = yp;
-            Oxp1 = xp1;
-            Oyp1 = yp1;                                //Запис значень в тимчасові змінні
-        }*/
-
-
-
-
-
-
-
-
-
-
-        for (double x = Step; x <= N; x += Step) {
-            double y = K / (A * x);
-
-
-            xp = (int) Math.round(CalibratorX - x * CP);
             xp1 = (int) Math.round(CalibratorX + x * CP);
 
-
-            int yp = (int) Math.round(CalibratorY + y * CP);
-
-            int yp1 = (int) Math.round(CalibratorY - y * CP);
-            System.out.println(y);
             if (x != Step) {
                 //Малючання по координатам
-                if (CalibratorX - x * CP < width) {
-                    g.drawLine(Oxp - 1, Oyp - 1, xp - 1, yp - 1);              // -1 для того щоб лінія було жирною
-                    g.drawLine(Oxp, Oyp, xp, yp);             //повторне малювання лінії
-                    System.out.println("0xp = " +  Oxp + "0yp = " + Oyp + "xp " + xp);
-                }
-
                 if (CalibratorX + x * CP < width) {  //Fixed
                     g.drawLine(Oxp1 - 1, Oyp1 - 1, xp1 - 1, yp1 - 1);
                     g.drawLine(Oxp1, Oyp1, xp1, yp1);
                 }
             }
-
-            Oxp = xp;
-            Oyp = yp;
             Oxp1 = xp1;
             Oyp1 = yp1;                                //Запис значень в тимчасові змінні
         }
 
 
 
+        for (double x = Step; x <= M*(-1); x += Step) {      //Частина у від'ємних координатах
 
+            double y = K / (A * x);
+            int yp = (int) Math.round(CalibratorY + y * CP);
+            xp = (int) Math.round(CalibratorX - x * CP);
 
+            if (x != Step) {
+                //Малючання по координатам
+                if (CalibratorX - x * CP < width) {
+                    g.drawLine(Oxp - 1, Oyp - 1, xp - 1, yp - 1);              // -1 для малювання подвійної щоб лінія було жирною
+                    g.drawLine(Oxp, Oyp, xp, yp);             //повторне малювання лінії
+                    System.out.println("0xp = " +  Oxp + "0yp = " + Oyp + "xp " + xp);
+                }
+            }
+            Oxp = xp;
+            Oyp = yp;
 
-
-
-
+        }
 
     }
+
+
+    public String getHistory() throws Exception {
+        FileReader fr = new FileReader(file);
+        Scanner sc = new Scanner(fr);
+        StringBuilder sbRes = new StringBuilder();
+
+        while (sc.hasNext()){
+
+            sbRes.append(sc.nextLine()).append("\n");
+
+        }
+        fr.close();
+        System.out.println(sbRes.toString());
+
+        return sbRes.toString();
+    }
+
+
+
+    public void clearHistory() throws IOException {
+        fw = new FileWriter(file);
+        fw.write("");
+        fw.close();
+    }
+
+
+
 }
